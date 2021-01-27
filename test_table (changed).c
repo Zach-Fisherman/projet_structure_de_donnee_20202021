@@ -6,13 +6,25 @@ int main(int argc, char** argv){
     t_table ma_table = nouvelle_entree("1", TABLE_VIDE, TABLE_VIDE);
     t_table ma_table_2;
     printf("1er affichage\n");
-    afficher_entree(ma_table);
     creer_aine(ma_table, "1.2");
     creer_aine(ma_table, "1.1");
+    
+    /*printf("1.1\n");
+    afficher_entree(ma_table->le_premier_fils);
+    printf("1.2\n");
+    afficher_entree(ma_table->le_dernier_fils);*/
+
     creer_benjamin(ma_table, "1.3");
     creer_aine(ma_table, "1.0");
     printf("2eme affichage\n");
     afficher_table(ma_table, 0);
+    afficher_entree(ma_table);
+
+    /*a_entree temp = ma_table->le_dernier_fils;
+    afficher_entree(temp);
+    temp= temp->le_frere_precedent;
+    afficher_entree(temp);*/
+
     creer_benjamin(ma_table->le_premier_fils, "1.0.0");
     creer_benjamin(ma_table->le_dernier_fils, "1.3.0");
     printf("3eme affichage\n");
@@ -31,14 +43,22 @@ int main(int argc, char** argv){
     /* descendre 1 */
     printf("6eme affichage\n");
     afficher_table(ma_table, 0);
+    afficher_entree(ma_table);
     supprimer_entree(&ma_table);
     printf("7eme affichage\n");
     afficher_table(ma_table, 0);
+    afficher_entree(ma_table);
     supprimer_entree(&ma_table);
     printf("8eme affichage\n");
-    afficher_table(ma_table, 0);
+    afficher_table(ma_table,0);
+    
+    /*printf("Test Detruire Table\n");
+    detruire_table(&ma_table);
+    afficher_table(ma_table,0);
+    afficher_entree(ma_table);*/
+    /*
 
-    /*printf("************** SAVE\n");
+    printf("************** SAVE\n");
 
     afficher_table(ma_table, 0);
     FILE* mon_fichier = fopen("toto.sav", "w");
@@ -53,6 +73,6 @@ int main(int argc, char** argv){
     afficher_table(ma_table_2, 0);
  
     detruire_table(&ma_table);
-    afficher_table(ma_table, 0);*/
-    return 0;
+    afficher_table(ma_table, 0);
+    return 0;*/
 }

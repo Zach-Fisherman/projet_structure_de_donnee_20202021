@@ -19,8 +19,8 @@ void afficher_entree(a_entree ceci){
     printf("le_dernier_fils = %p, ",ceci->le_dernier_fils);
     printf("le_frere_precedent = %p, ",ceci->le_frere_precedent);
     printf("le_frere_suivant = %p, ",ceci->le_frere_suivant);
-    printf("le_pere = %p]",ceci->le_pere);
-    printf("%c\n", ceci->l_etiquette);
+    printf("le_pere = %p] ",ceci->le_pere);
+    printf("%s\n", ceci->l_etiquette);
 }
 
 void afficher_table(t_table ceci, int decalage){
@@ -47,9 +47,6 @@ void creer_aine(t_table ceci, char* etiquette){
             pmf->le_frere_suivant = ceci->le_premier_fils;
             ceci->le_premier_fils->le_frere_precedent = pmf;
             ceci->le_premier_fils = pmf;
-            /*ceci->le_premier_fils = pmf;
-            ceci->le_premier_fils->le_frere_suivant = ceci->le_dernier_fils;
-            ceci->le_dernier_fils->le_frere_precedent == ceci->le_premier_fils;*/
         }else{
             pmf->le_frere_suivant = ceci->le_premier_fils;
             ceci->le_premier_fils->le_frere_precedent = pmf;
@@ -57,6 +54,7 @@ void creer_aine(t_table ceci, char* etiquette){
         }
     }
 
+    /* plus besoin car on est sûr que le dernier fils ne sera plus vide
     if(ceci->le_dernier_fils==TABLE_VIDE){
         a_entree temp = ceci->le_premier_fils;
         while(temp->le_frere_suivant!=TABLE_VIDE){
@@ -64,14 +62,23 @@ void creer_aine(t_table ceci, char* etiquette){
         }
         ceci->le_dernier_fils = temp;
 
-    }
+    }*/
 }
 
 void creer_benjamin(a_entree ceci, char* etiquette){
     a_entree tmp;
     a_entree tmp2;
-    int first_son = 0;
+    //int first_son = 0;
 
+    if(ceci->le_premier_fils!=TABLE_VIDE){
+        tmp = nouvelle_entree(etiquette,ceci,ceci->le_dernier_fils);
+        ceci->le_dernier_fils->le_frere_suivant = tmp;
+        ceci->le_dernier_fils = tmp;
+    }else{
+        creer_aine(ceci,etiquette);
+    }
+
+    /* code spaghetti, a été simplifié au dessus
     if(ceci->le_dernier_fils==TABLE_VIDE && ceci->le_premier_fils!=TABLE_VIDE){
         if(ceci->le_premier_fils!=TABLE_VIDE){
             tmp = ceci->le_premier_fils;
@@ -93,19 +100,24 @@ void creer_benjamin(a_entree ceci, char* etiquette){
         tmp->le_frere_suivant = tmp2;
         tmp2->le_frere_precedent =tmp;
         ceci->le_dernier_fils=tmp2;
-    }
+    }*/
 }
 
 void creer_petit_frere(a_entree ceci, char* etiquette){
     a_entree tmp = ceci->le_frere_suivant;
     ceci->le_frere_suivant = nouvelle_entree(etiquette,ceci->le_pere,ceci);
     ceci->le_frere_suivant->le_frere_suivant = tmp;
+
+    if(tmp==TABLE_VIDE && ceci->le_pere!=TABLE_VIDE){
+        ceci->le_pere->le_dernier_fils = ceci->le_frere_suivant;
+    }
 }
 
 
 void inserer_grand_frere(t_table* ceci, char* etiquette){
-    t_table gra_f = nouvelle_entree(etiquette,(*ceci)->le_pere,(*ceci)->le_frere_precedent);    
     t_table tmp = (*ceci);
+    t_table gra_f = nouvelle_entree(etiquette,tmp->le_pere,tmp->le_frere_precedent);    
+    
     gra_f->le_frere_suivant = tmp;
     tmp->le_frere_precedent = gra_f;
     *ceci = gra_f;
@@ -113,7 +125,7 @@ void inserer_grand_frere(t_table* ceci, char* etiquette){
 
 int remonter(a_entree ceci){
     if (ceci->le_pere == TABLE_VIDE){
-        return 0;
+        return 0; // si tu est orphelin tu ne peut pas devenir papa
     }else{
         a_entree e_pere = ceci->le_pere;
         a_entree e_oncle = ceci->le_pere->le_frere_suivant;
@@ -121,6 +133,7 @@ int remonter(a_entree ceci){
 
         if(ceci->le_frere_precedent == TABLE_VIDE && ceci->le_frere_suivant==TABLE_VIDE){
             e_pere->le_premier_fils = TABLE_VIDE;
+            e_pere->le_dernier_fils = TABLE_VIDE;
         }else if(ceci->le_frere_precedent == TABLE_VIDE){
             e_pere->le_premier_fils = ceci->le_frere_suivant;
             e_pere->le_premier_fils->le_frere_precedent = TABLE_VIDE;
@@ -146,11 +159,13 @@ int descendre(a_entree ceci){
     if(ceci->le_frere_precedent == TABLE_VIDE){
         return 0;
     }else{
-        if(ceci->le_frere_precedent->le_premier_fils==TABLE_VIDE){
-            ceci->le_frere_precedent->le_dernier_fils= ceci;
-        }
         a_entree e_ainee = ceci->le_frere_precedent;
         a_entree e_p_frere = ceci->le_frere_suivant;
+
+        if(e_ainee->le_premier_fils==TABLE_VIDE){
+            e_ainee->le_premier_fils=ceci;
+            e_ainee->le_dernier_fils= ceci;
+        }
         
         ceci->le_frere_precedent = TABLE_VIDE;
 
@@ -158,9 +173,12 @@ int descendre(a_entree ceci){
         e_p_frere->le_frere_precedent = e_ainee;
         //l'ainee pointe maintenant vers le frere suivant de ceci
 
-        ceci->le_frere_suivant = e_ainee->le_premier_fils;
-        e_ainee->le_premier_fils = ceci;
+        if(ceci!=e_ainee->le_premier_fils){
+            ceci->le_frere_suivant = e_ainee->le_premier_fils;
+            e_ainee->le_premier_fils = ceci;
+        }
         ceci->le_pere = e_ainee;
+
         //le premier fil de l'ainée est maintenant ceci*/
         
         /*if(ceci->le_premier_fils->le_frere_suivant != TABLE_VIDE){
@@ -169,6 +187,7 @@ int descendre(a_entree ceci){
             }
         }*/
         //sensée enlever le frère précedent de ceci mais fait une Segmentation fault
+        //ps : je suis stupide, j'enleve déjà le frère précédent de ceci plus haut et de manière beaucoup plus simple.
         
         return 1;
     }
@@ -188,7 +207,6 @@ void supprimer_entree(a_entree* ceci){
         temp = (*ceci)->le_frere_suivant;
         temp->le_frere_precedent = TABLE_VIDE;
         *ceci = temp;
-        
     }else{
         temp = (*ceci)->le_frere_precedent;
         *ceci = (*ceci)->le_frere_suivant;
@@ -202,4 +220,5 @@ void detruire_table(t_table* ceci){
         supprimer_entree(ceci);       
     }
     free(*ceci);
+    //la fonction la plus simple de ce programme.
 }
